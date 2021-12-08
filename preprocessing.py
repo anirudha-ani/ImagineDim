@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import gensim
 import enchant
+import math
 
 # take shapenetdata and return name of the object and volume
 def get_shapenet_data():
@@ -32,10 +33,13 @@ def get_shapenet_data():
      input_data = []
      label = []
      eng_dict = enchant.Dict("en_US")
-     model = gensim.models.KeyedVectors.load_word2vec_format('Dataset/GoogleNews/GoogleNews-vectors-negative300.bin', binary=True)
+     embedding_model = gensim.models.KeyedVectors.load_word2vec_format('Dataset/GoogleNews/GoogleNews-vectors-negative300.bin', binary=True)
+
+     # for index in range(len(data)): 
+     #      if()
 
      for index in range(len(data)): 
-          if(type(data[index][0]) != str or not(isinstance(data[index][1], (int, float)))):
+          if(type(data[index][0]) != str or not(isinstance(data[index][1], (int, float))) or np.isnan(data[index][1])):
                # print("Ignoring = ", data[index][0])
                unprocessed_data_index.append(index)
                continue
@@ -48,7 +52,7 @@ def get_shapenet_data():
                lastToken = token.text
                if token.pos_ == "NOUN" or token.pos_ == "PROPN":
                     # print("Subject = ", token.text)
-                    if eng_dict.check(token.text) and (token.text in model):
+                    if len(token.text)> 2 and eng_dict.check(token.text) and (token.text in embedding_model):
                          nounPhrases.append(token.text)
           if(len(nounPhrases) != 0):
                input_data.append(nounPhrases.pop())
@@ -69,12 +73,40 @@ def get_shapenet_data():
      # label = data[:, 1]
 
      # model = gensim.models.KeyedVectors.load_word2vec_format('Dataset/GoogleNews/GoogleNews-vectors-negative300.bin', binary=True)
-     input_data_embedded_form = model[input_data]
+     input_data_embedded_form = embedding_model[input_data]
+     
+     no_of_total_data = np.shape(label)[0]
+     train_split = 0.9
+     no_of_train_data = int(math.ceil(no_of_total_data * train_split))
 
+     shuffled_index = np.arange(no_of_total_data)
+     np.random.shuffle(shuffled_index)
+     
      # print(np.shape(input_data_embedded_form))
      # print(np.shape(label))
 
-     return input_data_embedded_form, label
+     shuffled_input_data = np.take(input_data_embedded_form, shuffled_index, axis=0)
+     shuffled_english_input_word = np.take(input_data, shuffled_index, axis = 0)
+     shuffled_label_data = np.take(label, shuffled_index, axis = 0)
+
+     # print(np.shape(shuffled_input_data))
+     # print(np.shape(shuffled_label_data))
+
+     train_x = shuffled_input_data[0:no_of_train_data, :]
+     train_english_word = shuffled_english_input_word[0:no_of_train_data]
+     train_y = shuffled_label_data[0:no_of_train_data]
+
+     test_x = shuffled_input_data[no_of_train_data: no_of_total_data, :]
+     test_english_word = shuffled_english_input_word[no_of_train_data: no_of_total_data]
+     test_y = shuffled_label_data[no_of_train_data: no_of_total_data]
+     # print(np.shape(input_data_embedded_form))
+     # print(np.shape(label))
+     # print(np.shape(train_x))
+     # print(np.shape(train_y))
+     # print(np.shape(test_x))
+     # print(np.shape(test_y))
+
+     return train_x, train_y, test_x, test_y, train_english_word, test_english_word
 
      # return data[:, 0]
      # doc = nlp(input_text)
