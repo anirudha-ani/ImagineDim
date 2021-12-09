@@ -15,7 +15,7 @@ def get_shapenet_data():
      # print(shapenet_df.columns.values)
 
      # only taking name and solidVolume column from the dataset
-     dataFrame = shapenet_df[ ['name','solidVolume']]
+     dataFrame = shapenet_df[ ['name','weight']]
 
      # f = open("output.txt", "a")
      # print("Hello stackoverflow!", file=f)
@@ -76,7 +76,7 @@ def get_shapenet_data():
      input_data_embedded_form = embedding_model[input_data]
      
      no_of_total_data = np.shape(label)[0]
-     train_split = 0.9
+     train_split = 0.5
      no_of_train_data = int(math.ceil(no_of_total_data * train_split))
 
      shuffled_index = np.arange(no_of_total_data)
