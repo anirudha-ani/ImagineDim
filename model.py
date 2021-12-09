@@ -13,7 +13,7 @@ def plot_loss(history):
   plt.plot(history.history['val_loss'], label='val_loss')
 #   plt.ylim([10, 70])
   plt.xlabel('Epoch')
-  plt.ylabel('Error [MPG]')
+  plt.ylabel('Error [MAE]')
   plt.legend()
   plt.grid(True)
   plt.show()
@@ -35,8 +35,8 @@ def main():
     # train_y = train_y
     # print(train_x[0:3])
     # print(train_y[0:3])
-    train_x = train_x[0:1000, :]
-    train_y = train_y[0:1000]
+    # train_x = train_x[0:1000, :]
+    # train_y = train_y[0:1000]
 
    
     print("Data preprocessing done")
@@ -53,9 +53,9 @@ def main():
     history = prediction_model.fit(
         train_x,
         train_y,
-        validation_split=.2,
-        epochs=5000,
-        # batch_size=50,
+        validation_split=.5,
+        epochs=2000,
+        # batch_size=50, 
         verbose=1
     )
 
@@ -67,15 +67,25 @@ def main():
     # print("word = ", test_english_word[3], "prediction = ", prediction_model.predict(np.expand_dims(test_x[3], axis=0)), " actual = ", test_y[3])
     print("Evaluate")
     prediction_model.evaluate(test_x, test_y, verbose=1)
+
+    prediction_model.summary()
+
     test_prediction = prediction_model.predict(test_x)
     percentage_error_over_test = []
 
-    # for index in range(len(test_english_word)):
+    print("10 random test sample")
     for index in range(10):
         print("word = ", test_english_word[index], " prediction = ",test_prediction[index], " actual = ", test_y[index])
         percentage_error= abs((test_y[index] - test_prediction[index][0]) / test_y[index] * 100.)
-        percentage_error_over_test.append(percentage_error)
+        # percentage_error_over_test.append(percentage_error)
         print("pecentage error = ", percentage_error)
+    
+    for index in range(len(test_english_word)):
+    # for index in range(10):
+        # print("word = ", test_english_word[index], " prediction = ",test_prediction[index], " actual = ", test_y[index])
+        percentage_error= abs((test_y[index] - test_prediction[index][0]) / test_y[index] * 100.)
+        percentage_error_over_test.append(percentage_error)
+        # print("pecentage error = ", percentage_error)
     print("Average test percentage error = ", np.average(percentage_error_over_test)) 
 
     
@@ -94,14 +104,38 @@ def main():
         miss_counter_over_test.append(miss_counter)
     print("Total test = ",len(test_english_word), "Average miss counter = ", np.average(miss_counter_over_test)) 
    
-   
+    
+    
     train_prediction = prediction_model.predict(train_x)
     percentage_error_over_train = []
+
+    print("10 random train sample")
     for index in range(10):
         print("word = ", train_english_word[index], " prediction = ",train_prediction[index], " actual = ", train_y[index])
         percentage_error= abs((train_y[index] - train_prediction[index][0]) / train_y[index] * 100.)
-        percentage_error_over_train.append(percentage_error)
+        # percentage_error_over_train.append(percentage_error)
         print("pecentage error = ", percentage_error)
+
+    for index in range(len(train_english_word)):
+        # print("word = ", train_english_word[index], " prediction = ",train_prediction[index], " actual = ", train_y[index])
+        percentage_error= abs((train_y[index] - train_prediction[index][0]) / train_y[index] * 100.)
+        percentage_error_over_train.append(percentage_error)
+        # print("pecentage error = ", percentage_error)
     print("Average train percentage error = ", np.average(percentage_error_over_train)) 
+
+    miss_counter_over_train = []
+    for index in range(len(train_english_word)):
+        miss_counter = 0 
+        for index2 in range(len(train_english_word)):
+            if index == index2:
+                continue
+
+            if train_y[index2] < train_y[index] and train_prediction[index2][0] > train_prediction[index][0]:
+                miss_counter+=1
+            elif train_y[index2] > train_y[index] and train_prediction[index2][0] < train_prediction[index][0]:
+                miss_counter +=1
+        # print("miss counter for word = ", train_english_word[index], " = " ,miss_counter)
+        miss_counter_over_train.append(miss_counter)
+    print("Total train = ",len(train_english_word), "Average miss counter = ", np.average(miss_counter_over_train)) 
 if __name__ == '__main__':
     main()

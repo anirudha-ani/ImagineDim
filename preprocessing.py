@@ -15,7 +15,7 @@ def get_shapenet_data():
      # print(shapenet_df.columns.values)
 
      # only taking name and solidVolume column from the dataset
-     dataFrame = shapenet_df[ ['name','weight']]
+     dataFrame = shapenet_df[ ['name','solidVolume']]
 
      # f = open("output.txt", "a")
      # print("Hello stackoverflow!", file=f)
